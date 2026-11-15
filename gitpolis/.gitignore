@@ -1,0 +1,13 @@
+# Node / Dependencies
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor & OS
+.DS_Store
+*.suo
+*.sw?
+
+# TypeScript cache
+*.tsbuildinfo

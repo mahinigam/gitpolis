@@ -1,0 +1,12 @@
+{
+  "name": "gitpolis-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Procedural 3D City Builder from any GitHub Profile",
+  "scripts": {
+    "dev": "npm --prefix gitpolis run dev",
+    "build": "npm --prefix gitpolis run build",
+    "preview": "npm --prefix gitpolis run preview",
+    "install:app": "npm --prefix gitpolis install"
+  }
+}
