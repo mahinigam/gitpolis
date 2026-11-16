@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   classifyRepoDomain,
   computeDistrictProsperity,
+  withDecisionCritique,
 } from '../../../src/domain/city/analysis';
+import { buildCityBlueprint } from '../../../src/domain/city/planning';
 import type { RepoDomainId } from '../../../src/domain/city/types';
-import { makeCommit, makeRepo } from '../../fixtures/github';
+import { makeDecisionPlan } from '../../fixtures/decision';
+import { makeCommit, makePayload, makeRepo } from '../../fixtures/github';
 
 describe('classifyRepoDomain', () => {
   const cases: Array<{ label: string; expected: RepoDomainId; repo: ReturnType<typeof makeRepo> }> = [
@@ -306,5 +309,104 @@ describe('computeDistrictProsperity', () => {
     );
 
     expect(metrics.maintenanceHealth).toBe(10);
+  });
+});
+
+describe('withDecisionCritique', () => {
+  it('updates district scores and synchronizes climate with the AI decision plan', () => {
+    const payload = makePayload({
+      repos: [makeRepo({ name: 'neural-lab' })],
+    });
+    const initialBlueprint = buildCityBlueprint(payload, { nowMs: Date.now() });
+
+    const plan = makeDecisionPlan({
+      citySummary: {
+        civicTitle: 'The Neural Metropolis',
+        foundingMotto: 'Code that learns',
+        developerArchetype: 'The Research Synthesist',
+        vitalityAssessment: 92,
+        climateRationale: 'Heavy nocturnal training runs.',
+        suggestedWeather: 'clear',
+        suggestedTimeOfDay: 22.5,
+      },
+      districts: [
+        {
+          repoName: 'neural-lab',
+          assignedZone: 'cybernetics_ai_biosphere',
+          civicCritique: {
+            prosperityScore: 95,
+            fulfillmentScore: 88,
+            municipalRole: 'Deep Learning Core',
+            architecturalFeatures: ['Optic Tower'],
+            urbanPlanningRationale: 'Central hub',
+          },
+        },
+      ],
+    });
+
+    const updated = withDecisionCritique(initialBlueprint, plan);
+
+    expect(updated.cityName).toBe('The Neural Metropolis');
+    expect(updated.citySubtitle).toBe('The Research Synthesist • AI Orchestrated');
+    expect(updated.districts[0].prosperity.prosperityScore).toBe(95);
+    expect(updated.districts[0].prosperity.fulfillmentScore).toBe(88);
+
+    // Synchronized climate
+    expect(updated.climate.recommendedTimeOfDay).toBe(22.5);
+    expect(updated.climate.recommendedWeather).toBe('clear');
+    expect(updated.climate.vitalityScore).toBe(92);
+    expect(updated.climate.description).toBe('Heavy nocturnal training runs.');
+    expect(updated.climate.label).toBe('Nocturnal Glow • AI Orchestrated');
+    expect(updated.climate.mood).toBe('twilight_mist');
+  });
+
+  it('correctly formats rain, mist, and morning labels', () => {
+    const payload = makePayload({ repos: [makeRepo({ name: 'api-gateway' })] });
+    const bp = buildCityBlueprint(payload, { nowMs: Date.now() });
+
+    const rainPlan = makeDecisionPlan({
+      citySummary: {
+        civicTitle: 'Sprint City',
+        foundingMotto: 'Deploy fast',
+        developerArchetype: 'The Distributed Systems Engineer',
+        vitalityAssessment: 85,
+        climateRationale: 'Rapid velocity.',
+        suggestedWeather: 'rain',
+        suggestedTimeOfDay: 15.0,
+      },
+    });
+    const rainBp = withDecisionCritique(bp, rainPlan);
+    expect(rainBp.climate.label).toBe('Electric Drizzle • AI Orchestrated');
+    expect(rainBp.climate.mood).toBe('drizzle');
+
+    const mistPlan = makeDecisionPlan({
+      citySummary: {
+        civicTitle: 'Mist Valley',
+        foundingMotto: 'Quiet craft',
+        developerArchetype: 'The Polyglot Artisan',
+        vitalityAssessment: 60,
+        climateRationale: 'Steady development.',
+        suggestedWeather: 'mist',
+        suggestedTimeOfDay: 8.0,
+      },
+    });
+    const mistBp = withDecisionCritique(bp, mistPlan);
+    expect(mistBp.climate.label).toBe('Misty Twilight • AI Orchestrated');
+    expect(mistBp.climate.mood).toBe('twilight_mist');
+
+    const morningPlan = makeDecisionPlan({
+      citySummary: {
+        civicTitle: 'Dawn Outpost',
+        foundingMotto: 'Early morning commits',
+        developerArchetype: 'The Core Architect',
+        vitalityAssessment: 75,
+        climateRationale: 'Early riser.',
+        suggestedWeather: 'clear',
+        suggestedTimeOfDay: 9.5,
+      },
+    });
+    const morningBp = withDecisionCritique(bp, morningPlan);
+    expect(morningBp.climate.label).toBe('Morning Light • AI Orchestrated');
+    expect(morningBp.climate.mood).toBe('breezy');
   });
 });

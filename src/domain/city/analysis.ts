@@ -1,6 +1,7 @@
 import type { MunicipalDecisionPlan } from '../decision/types';
 import type {
   CityBlueprint,
+  CityClimate,
   DistrictBlueprint,
   DistrictProsperityMetrics,
   GitHubCommitData,
@@ -378,6 +379,16 @@ export function findDistrictByRepoName(
  * Returns a new blueprint with AI prosperity/fulfilment critiques merged into
  * the matching districts. Never mutates the input, so React state stays sane.
  */
+/**
+ * Merges an AI MunicipalDecisionPlan into an existing CityBlueprint.
+ *
+ * Updates:
+ * - District prosperity and fulfillment scores from civic critiques.
+ * - City name and subtitle to match the AI civic title and archetype.
+ * - Atmosphere and climate recommendations (solar hour, weather, narrative
+ *   rationale, and mood label) so HUD controllers and 3D rendering remain
+ *   in complete synchronization.
+ */
 export function withDecisionCritique(
   blueprint: CityBlueprint,
   plan: MunicipalDecisionPlan
@@ -386,11 +397,9 @@ export function withDecisionCritique(
     plan.districts.map((district) => [normalizeRepoName(district.repoName), district.civicCritique])
   );
 
-  let changed = false;
   const districts = blueprint.districts.map((district) => {
     const critique = critiques.get(normalizeRepoName(district.id));
     if (!critique) return district;
-    changed = true;
     return {
       ...district,
       prosperity: {
@@ -401,5 +410,35 @@ export function withDecisionCritique(
     };
   });
 
-  return changed ? { ...blueprint, districts } : blueprint;
+  const weather = plan.citySummary.suggestedWeather;
+  const tod = plan.citySummary.suggestedTimeOfDay;
+
+  let moodLabel = 'Radiant Daylight';
+  if (weather === 'rain') moodLabel = 'Electric Drizzle';
+  else if (weather === 'mist') moodLabel = 'Misty Twilight';
+  else if (tod >= 19.5 || tod < 6.5) moodLabel = 'Nocturnal Glow';
+  else if (tod >= 16 && tod < 19.5) moodLabel = 'Golden Hour';
+  else if (tod < 12) moodLabel = 'Morning Light';
+
+  let mood: CityClimate['mood'] = 'radiant';
+  if (weather === 'rain') mood = 'drizzle';
+  else if (weather === 'mist' || tod >= 18 || tod < 7) mood = 'twilight_mist';
+  else if (tod < 12) mood = 'breezy';
+
+  const climate: CityClimate = {
+    mood,
+    label: `${moodLabel} • AI Orchestrated`,
+    description: plan.citySummary.climateRationale,
+    vitalityScore: plan.citySummary.vitalityAssessment,
+    recommendedTimeOfDay: tod,
+    recommendedWeather: weather,
+  };
+
+  return {
+    ...blueprint,
+    cityName: plan.citySummary.civicTitle,
+    citySubtitle: `${plan.citySummary.developerArchetype} • AI Orchestrated`,
+    districts,
+    climate,
+  };
 }

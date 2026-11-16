@@ -79,16 +79,20 @@ export function App() {
 
   const applyCityPayload = useCallback((payload: GitHubProfilePayload) => {
     rawPayloadRef.current = payload;
-    const nextBlueprint = buildCityBlueprint(payload);
-    setBlueprint(nextBlueprint);
-    select(null);
-    highlightLanguage(null);
-    engineRef.current?.loadBlueprint(nextBlueprint);
-
+    let nextBlueprint = buildCityBlueprint(payload);
     // Restore a cached AI plan for this profile, if one exists.
     const cacheKey = computeProfileFingerprint(payload);
     const cachedPlan = getCachedDecisionSync(cacheKey);
     const plan = cachedPlan;
+
+    if (plan) {
+      nextBlueprint = withDecisionCritique(nextBlueprint, plan);
+    }
+
+    setBlueprint(nextBlueprint);
+    select(null);
+    highlightLanguage(null);
+    engineRef.current?.loadBlueprint(nextBlueprint);
 
     setDecisionPlan(plan);
     if (plan) engineRef.current?.applyDecisionPlan(plan);
@@ -108,15 +112,7 @@ export function App() {
       );
       setDecisionPlan(plan);
       engineRef.current?.applyDecisionPlan(plan);
-      setBlueprint((previous) =>
-        previous
-          ? {
-              ...withDecisionCritique(previous, plan),
-              cityName: plan.citySummary.civicTitle,
-              citySubtitle: `${plan.citySummary.developerArchetype} • AI Orchestrated`,
-            }
-          : previous
-      );
+      setBlueprint((previous) => (previous ? withDecisionCritique(previous, plan) : previous));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Gemini Decision API failed';
       setAiError(message);
