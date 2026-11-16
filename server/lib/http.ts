@@ -32,6 +32,24 @@ export function sendJson(
  */
 export function readJsonBody(req: IncomingMessage, maxBytes = MAX_JSON_BYTES): Promise<JsonBodyResult> {
   return new Promise((resolve) => {
+    // If Vercel or another runtime already parsed the body into req.body
+    const preParsed = (req as { body?: unknown }).body;
+    if (preParsed !== undefined) {
+      if (typeof preParsed === 'object' && preParsed !== null) {
+        resolve({ ok: true, status: 200, body: preParsed });
+        return;
+      }
+      if (typeof preParsed === 'string') {
+        try {
+          resolve({ ok: true, status: 200, body: JSON.parse(preParsed) });
+          return;
+        } catch {
+          resolve({ ok: false, status: 400, error: 'Malformed JSON body.' });
+          return;
+        }
+      }
+    }
+
     const contentType = String(req.headers['content-type'] || '');
     if (!contentType.toLowerCase().includes('application/json')) {
       resolve({ ok: false, status: 415, error: 'Expected application/json.' });
@@ -88,7 +106,8 @@ export function isCrossOrigin(req: IncomingMessage): boolean {
   if (!origin) return false;
   try {
     const originHost = new URL(origin).host;
-    const host = process.env.GITPOLIS_TRUST_PROXY === '1'
+    const isTrustedProxy = process.env.GITPOLIS_TRUST_PROXY === '1' || process.env.VERCEL === '1';
+    const host = isTrustedProxy
       ? (req.headers['x-forwarded-host'] as string | undefined) || req.headers.host
       : req.headers.host;
     return originHost !== host;
@@ -105,7 +124,8 @@ export function isCrossOrigin(req: IncomingMessage): boolean {
  * is the one appended by that proxy.
  */
 export function getClientIp(req: IncomingMessage): string {
-  if (process.env.GITPOLIS_TRUST_PROXY === '1') {
+  const isTrustedProxy = process.env.GITPOLIS_TRUST_PROXY === '1' || process.env.VERCEL === '1';
+  if (isTrustedProxy) {
     const forwarded = req.headers['x-forwarded-for'];
     if (typeof forwarded === 'string' && forwarded.length > 0) {
       const hops = forwarded.split(',').map((hop) => hop.trim()).filter(Boolean);
@@ -129,11 +149,11 @@ export const BASE_SECURITY_HEADERS: Record<string, string> = {
  */
 export const PRODUCTION_CSP = [
   "default-src 'self'",
-  "script-src 'self'",
+  "script-src 'self' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https://avatars.githubusercontent.com https://raw.githubusercontent.com",
-  "connect-src 'self' https://api.github.com https://generativelanguage.googleapis.com",
+  "connect-src 'self' https://api.github.com https://generativelanguage.googleapis.com https://vitals.vercel-insights.com",
   "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "base-uri 'self'",
