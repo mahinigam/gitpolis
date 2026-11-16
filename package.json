@@ -11,6 +11,7 @@
     "test:coverage": "npm --prefix gitpolis run test:coverage",
     "lint": "npm --prefix gitpolis run lint",
     "typecheck": "npm --prefix gitpolis run typecheck",
+    "format": "npm --prefix gitpolis run format",
     "install:app": "npm --prefix gitpolis install"
   }
 }
