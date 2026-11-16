@@ -1,5 +1,7 @@
 # GitPolis
 
+![GitPolis logo](./public/favicon.png)
+
 GitPolis turns any public GitHub profile into an interactive, procedural 3D metropolis. Repositories become municipal districts, programming languages dictate architectural design languages, commit histories extrude individual skyscrapers, and commit velocity drives real-time city weather and lighting.
 
 The project is deterministic: the same profile and timestamp consistently produce the identical procedural city layout.
