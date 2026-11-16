@@ -15,8 +15,8 @@ The app is a React + Three.js SPA with a small Node API layer embedded in the Vi
 ```bash
 git clone <repository-url> GitPolis
 cd GitPolis
-npm run install:app
-cp gitpolis/.env.example gitpolis/.env   # optional; all values have defaults
+npm install
+cp .env.example .env   # optional; all values have defaults
 npm run dev
 ```
 
@@ -24,15 +24,15 @@ Open <http://localhost:5173>. Add `?user=<login>` to load a profile immediately,
 
 `npm run dev` serves both the SPA and the `/api/*` routes. The API layer only exists in the Vite server and in `npm run preview`; a plain static deployment does not get it (see [Deployment](#deployment)).
 
-## Workspace scripts
+## Scripts
 
-Run these from the repository root. They proxy to the `gitpolis` package.
+Run these from the repository root.
 
 | Command | Purpose |
 | --- | --- |
-| `npm run install:app` | Install app dependencies |
+| `npm install` | Install dependencies |
 | `npm run dev` | Start Vite with the GitHub/Gemini proxy |
-| `npm run build` | Type-check and build `gitpolis/dist` |
+| `npm run build` | Type-check and build `dist` |
 | `npm run preview` | Serve the production build with the proxy and CSP |
 | `npm run test` | Run the Vitest suite once |
 | `npm run test:coverage` | Run tests with V8 coverage and thresholds |
@@ -40,11 +40,11 @@ Run these from the repository root. They proxy to the `gitpolis` package.
 | `npm run typecheck` | Build the app plus `--noEmit` for tests |
 | `npm run format` | Format with Prettier |
 
-Inside `gitpolis/`, `npm run test:watch` starts Vitest in watch mode.
+`npm run test:watch` starts Vitest in watch mode.
 
 ## Configuration
 
-Copy `gitpolis/.env.example` to `gitpolis/.env`. Vite loads the file and forwards values to the API middleware without overriding variables already set by the shell or CI.
+Copy `.env.example` to `.env`. Vite loads the file and forwards values to the API middleware without overriding variables already set by the shell or CI.
 
 | Variable | Scope | Default | Notes |
 | --- | --- | --- | --- |
@@ -73,40 +73,41 @@ Anything prefixed with `VITE_` is inlined into the public bundle. Do not put sec
 ```
 GitPolis/
 ├── .github/workflows/ci.yml        # lint → typecheck → coverage → build
-├── package.json                    # workspace command wrappers
-└── gitpolis/
-    ├── src/
-    │   ├── app/                    # App shell and hooks
-    │   │   └── hooks/              # engine lifecycle, timeline, climate
-    │   ├── components/             # hud/, panels/, modals/
-    │   ├── data/                   # showcase profiles, sample plans
-    │   ├── domain/                 # framework-free business logic
-    │   │   ├── city/               # blueprint, planning, analysis, climate, naming, styles
-    │   │   ├── decision/           # plan contract, Gemini schema, prompt, validation
-    │   │   └── github/             # raw mapping, metrics, commit classifier, fingerprint
-    │   ├── engine/                 # Three.js scene and builders
-    │   │   ├── builders/           # buildings, environment, municipal decor
-    │   │   ├── materials/          # procedural textures
-    │   │   └── systems/            # commuter/ambient life
-    │   ├── services/               # browser transports
-    │   │   ├── github/             # proxy-first profile client
-    │   │   └── gemini/             # proxy-first client, cache, key storage
-    │   ├── styles/
-    │   └── main.tsx
-    ├── server/                     # Vite middleware API
-    │   ├── api/                    # HTTP handlers
-    │   ├── lib/                    # http, cache, rate limit, concurrency
-    │   ├── services/               # GitHub and Gemini orchestration
-    │   └── plugin.ts               # Connect middleware + Vite plugin
-    ├── tests/
-    │   ├── app/hooks/
-    │   ├── domain/
-    │   ├── fixtures/
-    │   ├── server/
-    │   └── services/
-    ├── public/_headers             # static-host headers (Netlify/Cloudflare Pages)
-    ├── vite.config.ts
-    └── vitest.config.ts
+├── .env.example                    # server and build-time configuration
+├── package.json
+├── index.html
+├── src/
+│   ├── app/                        # App shell and hooks
+│   │   └── hooks/                  # engine lifecycle, timeline, climate
+│   ├── components/                 # hud/, panels/, modals/
+│   ├── data/                       # showcase profiles, sample plans
+│   ├── domain/                     # framework-free business logic
+│   │   ├── city/                   # blueprint, planning, analysis, climate, naming, styles
+│   │   ├── decision/               # plan contract, Gemini schema, prompt, validation
+│   │   └── github/                 # raw mapping, metrics, commit classifier, fingerprint
+│   ├── engine/                     # Three.js scene and builders
+│   │   ├── builders/               # buildings, environment, municipal decor
+│   │   ├── materials/              # procedural textures
+│   │   └── systems/                # commuter/ambient life
+│   ├── services/                   # browser transports
+│   │   ├── github/                 # proxy-first profile client
+│   │   └── gemini/                 # proxy-first client, cache, key storage
+│   ├── styles/
+│   └── main.tsx
+├── server/                         # Vite middleware API
+│   ├── api/                        # HTTP handlers
+│   ├── lib/                        # http, cache, rate limit, concurrency
+│   ├── services/                   # GitHub and Gemini orchestration
+│   └── plugin.ts                   # Connect middleware + Vite plugin
+├── tests/
+│   ├── app/hooks/
+│   ├── domain/
+│   ├── fixtures/
+│   ├── server/
+│   └── services/
+├── public/_headers                 # static-host headers (Netlify/Cloudflare Pages)
+├── vite.config.ts
+└── vitest.config.ts
 ```
 
 Dependency direction is one-way: `app`/`components` → `services` → `domain`; `engine` depends on `domain` types and styles. `domain/` has no React, Three.js, network, or storage dependencies, which keeps it directly testable.
@@ -186,7 +187,7 @@ CI runs `lint`, `typecheck`, `test:coverage`, and `build` on every push to `main
 ## Build and deployment
 
 ```bash
-npm run build     # emits gitpolis/dist
+npm run build     # emits dist
 npm run preview   # serves the build with API routes and CSP
 ```
 
