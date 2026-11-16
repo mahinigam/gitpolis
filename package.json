@@ -6,7 +6,8 @@
   "description": "Procedural 3D city built from any GitHub profile",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/build-serverless.mjs",
+    "build:serverless": "node scripts/build-serverless.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b && tsc -p tsconfig.test.json --noEmit",
     "lint": "eslint .",

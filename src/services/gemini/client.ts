@@ -162,7 +162,22 @@ async function requestViaProxy(
   if (response.status === 404) return null;
 
   const contentType = response.headers.get('content-type') || '';
-  // A static host with SPA rewrites answers /api/* with index.html (200).
+
+  // If the server answered with an error status (500, 502, 503, etc.):
+  if (!response.ok) {
+    if (contentType.includes('application/json')) {
+      const body = (await response.json().catch(() => null)) as
+        | { plan?: unknown; error?: string }
+        | null;
+      throw new Error(body?.error || `Gemini proxy error (${response.status})`);
+    }
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Server proxy error (${response.status}): ${text.slice(0, 100).trim() || response.statusText}`
+    );
+  }
+
+  // A static host with SPA rewrites answers /api/* with index.html (200 OK text/html).
   // That is "no proxy available", not a hard failure.
   if (!contentType.includes('application/json')) return null;
 
@@ -170,9 +185,6 @@ async function requestViaProxy(
     | { plan?: unknown; error?: string }
     | null;
 
-  if (!response.ok) {
-    throw new Error(body?.error || `Gemini proxy error (${response.status})`);
-  }
   if (!body?.plan) return null;
   return body.plan;
 }
