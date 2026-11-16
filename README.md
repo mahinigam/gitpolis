@@ -210,4 +210,8 @@ The app has no authentication or user accounts. Rate limits and caches reset whe
 
 ## License
 
-No license file is currently included. Add one before distributing or accepting external contributions.
+GitPolis is licensed under the [MIT License](./LICENSE).
+
+This license covers the code in this repository. GitHub, Gemini, Three.js,
+React, and other third-party services and dependencies remain subject to their
+own licenses and terms.
