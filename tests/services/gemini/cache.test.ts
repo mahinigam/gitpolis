@@ -172,12 +172,16 @@ describe('cache with IndexedDB', () => {
     useFakeIndexedDb();
     const plan = makeDecisionPlan();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+    const failQuota = () => {
       throw new Error('quota exceeded');
-    });
+    };
+    vi.spyOn(localStorage, 'setItem').mockImplementation(failQuota);
+    if (typeof window !== 'undefined' && window.localStorage && window.localStorage !== localStorage) {
+      vi.spyOn(window.localStorage, 'setItem').mockImplementation(failQuota);
+    }
 
     await expect(setCachedDecision(KEY, plan)).resolves.toBeUndefined();
-    await expect(getCachedDecision(KEY)).resolves.toEqual(plan);
     expect(warn).toHaveBeenCalled();
+    await expect(getCachedDecision(KEY)).resolves.toEqual(plan);
   });
 });
