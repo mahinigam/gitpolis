@@ -5,7 +5,7 @@ export function makeDecisionPlan(overrides: Partial<MunicipalDecisionPlan> = {})
     id: 'plan_test',
     username: 'ada',
     generatedAt: 1_700_000_000_000,
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3.5-flash',
     citySummary: {
       civicTitle: 'The Analytical Atrium',
       foundingMotto: 'Compute with intent',

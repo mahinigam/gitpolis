@@ -134,7 +134,7 @@ describe('executeGeminiMunicipalDecisions — direct transport', () => {
     expect(result).toEqual(PLAN);
     const [url, init] = fetchMock.mock.calls[1];
     expect(String(url)).toBe(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent'
     );
     expect(init.headers['x-goog-api-key']).toBe('direct-key');
     expect(init.headers.Authorization).toBeUndefined();
@@ -174,7 +174,7 @@ describe('executeGeminiMunicipalDecisions — direct transport', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('falls back to gemini-3.5-flash when direct model returns 404', async () => {
+  it('falls back to the next model when the direct model returns 404', async () => {
     fetchMock
       .mockResolvedValueOnce(PROXY_404)
       .mockResolvedValueOnce(
@@ -189,8 +189,8 @@ describe('executeGeminiMunicipalDecisions — direct transport', () => {
 
     expect(result).toEqual(PLAN);
     expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect(String(fetchMock.mock.calls[1][0])).toContain('gemini-2.5-flash');
-    expect(String(fetchMock.mock.calls[2][0])).toContain('gemini-3.5-flash');
+    expect(String(fetchMock.mock.calls[1][0])).toContain('gemini-3.5-flash');
+    expect(String(fetchMock.mock.calls[2][0])).toContain('gemini-3-flash-preview');
   });
 
   it('does not retry a terminal 4xx response', async () => {

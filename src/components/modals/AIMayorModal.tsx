@@ -373,8 +373,8 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
                       Google AI Studio Free API Key
                     </h3>
                     <p className={`mt-1 text-xs leading-relaxed ${subtle}`}>
-                      GitPolis uses Gemini 2.5 Flash by default via Google AI Studio. Free tier keys allow
-                      15 requests per minute with zero billing required.
+                      GitPolis uses Gemini 3.5 Flash by default via Google AI Studio. Free-tier
+                      keys are supported; quotas depend on your Google AI Studio account.
                     </p>
 
                     <div className="mt-3.5 flex flex-col sm:flex-row gap-2">

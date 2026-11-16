@@ -108,7 +108,7 @@ describe('requestMunicipalPlan — success', () => {
     expect(plan).toEqual(PLAN);
     const [url, init] = fetchMock.mock.calls[0];
     expect(String(url)).toBe(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent'
     );
     expect(init.method).toBe('POST');
     expect(init.headers['x-goog-api-key']).toBe('secret-key');
@@ -153,6 +153,7 @@ describe('requestMunicipalPlan — upstream failures', () => {
   });
 
   it('falls back to gemini-3.5-flash when the primary model returns 404', async () => {
+    process.env.GEMINI_MODEL = 'gemini-2.5-flash';
     fetchMock
       .mockResolvedValueOnce(
         jsonResponse(

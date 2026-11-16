@@ -18,8 +18,12 @@ import { computeProfileFingerprint } from '../../domain/github/fingerprint';
 import { getCachedDecision, setCachedDecision } from './cache';
 import { getStoredGeminiKey } from './keyStore';
 
-const DEFAULT_MODEL = 'gemini-2.5-flash';
-export const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash'] as const;
+const DEFAULT_MODEL = 'gemini-3.5-flash';
+export const FALLBACK_MODELS = [
+  'gemini-3.5-flash',
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash',
+] as const;
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 export type DecisionProgressCallback = (statusText: string) => void;

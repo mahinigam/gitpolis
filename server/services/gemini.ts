@@ -5,8 +5,12 @@ import { validateMunicipalDecisionPlan } from '../../src/domain/decision';
 import { buildDecisionPrompt } from '../../src/domain/decision/prompt';
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const DEFAULT_MODEL = 'gemini-2.5-flash';
-export const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash'] as const;
+const DEFAULT_MODEL = 'gemini-3.5-flash';
+export const FALLBACK_MODELS = [
+  'gemini-3.5-flash',
+  'gemini-3-flash-preview',
+  'gemini-2.5-flash',
+] as const;
 
 export class GeminiServiceError extends Error {
   constructor(
@@ -58,8 +62,8 @@ const REQUEST_TIMEOUT_MS = 45_000;
  * Calls Gemini with structured output enabled and validates the result against
  * the shared decision-plan contract before returning it.
  *
- * Automatically falls back to newer compatible models (e.g. gemini-3.5-flash)
- * if the primary model is retired or unavailable for the current API key.
+ * Falls back through compatible models if the configured model is retired or
+ * unavailable for the current API key.
  */
 export async function requestMunicipalPlan(
   payload: GitHubProfilePayload,

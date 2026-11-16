@@ -5,6 +5,7 @@ import { MUNICIPAL_DECISION_JSON_SCHEMA } from '../src/domain/decision/geminiSch
 import { buildDecisionPrompt } from '../src/domain/decision/prompt';
 import { validateMunicipalDecisionPlan } from '../src/domain/decision/validation';
 import { SHOWCASE_PROFILES } from '../src/data/showcaseProfiles';
+import { FALLBACK_MODELS } from '../server/services/gemini';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,7 @@ if (!apiKey) {
 }
 
 console.log(`[GitPolis Live Gemini Test] Initializing test with model: ${model}`);
-console.log(`[GitPolis Live Gemini Test] API Key present (length: ${apiKey.length}, starts with: ${apiKey.substring(0, 4)}...)`);
+console.log('[GitPolis Live Gemini Test] Gemini API key present');
 
 const payload = SHOWCASE_PROFILES['atelier-dev'];
 const promptText = buildDecisionPrompt(payload);
@@ -57,9 +58,10 @@ async function testCall(modelName: string) {
         maxOutputTokens: 8192,
         responseMimeType: 'application/json',
         responseSchema: MUNICIPAL_DECISION_JSON_SCHEMA,
+        thinkingConfig: { thinkingBudget: 0 },
       },
     }),
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(45_000),
   });
 
   const durationMs = Date.now() - startTime;
@@ -107,13 +109,10 @@ async function run() {
   try {
     console.log(`\nTesting primary model: ${model}...`);
     let result = await testCall(model);
-    if (!result.ok && model !== 'gemini-3.5-flash') {
-      console.log(`\nRetrying with fallback model gemini-3.5-flash...`);
-      result = await testCall('gemini-3.5-flash');
-    }
-    if (!result.ok && model !== 'gemini-3-flash-preview') {
-      console.log(`\nRetrying with fallback model gemini-3-flash-preview...`);
-      result = await testCall('gemini-3-flash-preview');
+    for (const fallback of FALLBACK_MODELS.filter((candidate) => candidate !== model)) {
+      if (result.ok) break;
+      console.log(`\nRetrying with fallback model ${fallback}...`);
+      result = await testCall(fallback);
     }
 
     if (!result.ok) {
@@ -124,7 +123,5 @@ async function run() {
     process.exit(1);
   }
 }
-
-run();
 
 run();

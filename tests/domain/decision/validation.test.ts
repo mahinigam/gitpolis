@@ -16,7 +16,7 @@ function validPlan() {
   return {
     id: 'plan_abc',
     generatedAt: 1_700_000_000_000,
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3.5-flash',
     citySummary: {
       civicTitle: 'Atelier of the Neural Horizon',
       foundingMotto: 'Ship small, learn fast',
@@ -86,7 +86,7 @@ describe('validateMunicipalDecisionPlan — defaults', () => {
     expect(plan?.username).toBe('ada');
     expect(plan?.id).toBe(`plan_${NOW.getTime()}`);
     expect(plan?.generatedAt).toBe(NOW.getTime());
-    expect(plan?.model).toBe('gemini-2.5-flash');
+    expect(plan?.model).toBe('gemini-3.5-flash');
     expect(plan?.citySummary).toEqual({
       civicTitle: 'Metropolis of @ada',
       foundingMotto: 'Engineered with Precision & Vision',
@@ -201,7 +201,7 @@ describe('validateMunicipalDecisionPlan — nested entries', () => {
       id: 'plan_abc',
       username: 'ada',
       generatedAt: 1_700_000_000_000,
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.5-flash',
       citySummary: input.citySummary,
       districts: input.districts,
       interDistrictConnections: input.interDistrictConnections,

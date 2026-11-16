@@ -36,6 +36,7 @@ Run these from the repository root.
 | `npm run preview` | Serve the production build with the proxy and CSP |
 | `npm run test` | Run the Vitest suite once |
 | `npm run test:coverage` | Run tests with V8 coverage and thresholds |
+| `npm run test:gemini:live` | Validate a real Gemini plan against the configured key |
 | `npm run lint` | ESLint over app, server, and tests |
 | `npm run typecheck` | Build the app plus `--noEmit` for tests |
 | `npm run format` | Format with Prettier |
@@ -50,8 +51,8 @@ Copy `.env.example` to `.env`. Vite loads the file and forwards values to the AP
 | --- | --- | --- | --- |
 | `GITHUB_TOKEN` | server | unset | Raises the GitHub budget to 5,000 req/hr and enables deeper analysis. Never sent to the browser. |
 | `GEMINI_API_KEY` | server | unset | Lets visitors use AI plans without supplying a key. |
-| `GEMINI_MODEL` | server | `gemini-2.5-flash` | Model used by the Gemini proxy. |
-| `VITE_GEMINI_MODEL` | client build | `gemini-2.5-flash` | Model for the direct browser fallback. |
+| `GEMINI_MODEL` | server | `gemini-3.5-flash` | Model used by the Gemini proxy. Falls back to `gemini-3-flash-preview`, then `gemini-2.5-flash`. |
+| `VITE_GEMINI_MODEL` | client build | `gemini-3.5-flash` | Model for the direct browser fallback. Rebuild after changing it. |
 | `PORT` | dev server | `5173` | |
 | `PREVIEW_PORT` | preview server | `4173` | |
 | `GITPOLIS_LAN` | dev/preview | unset | `1` binds to `0.0.0.0`; leave unset for localhost. |
@@ -171,7 +172,7 @@ The in-process limiter and cache are adequate for a single dev/preview instance.
 ## Testing
 
 ```bash
-npm run test            # 401 tests
+npm run test            # 403 tests
 npm run test:coverage   # V8 coverage with thresholds
 ```
 

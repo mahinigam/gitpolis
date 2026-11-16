@@ -5,7 +5,7 @@ export const SAMPLE_DECISION_PLANS: Record<string, MunicipalDecisionPlan> = {
     id: 'decision_mahinigam_curated',
     username: 'mahinigam',
     generatedAt: Date.now() - 3600000,
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3.5-flash',
     citySummary: {
       civicTitle: 'Mahinigam Solarium Metropolis',
       foundingMotto: 'Harmonizing Intelligent Agents with Systems Reliability',

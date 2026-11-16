@@ -100,7 +100,7 @@ export function validateMunicipalDecisionPlan(data: unknown, username: string): 
       id: raw.id || `plan_${Date.now()}`,
       username,
       generatedAt: Number(raw.generatedAt) || Date.now(),
-      model: raw.model || 'gemini-2.5-flash',
+      model: raw.model || 'gemini-3.5-flash',
       citySummary,
       districts,
       interDistrictConnections,
