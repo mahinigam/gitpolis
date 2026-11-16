@@ -328,8 +328,9 @@ export const TopBar: React.FC<TopBarProps> = ({
           <button
             type="button"
             onClick={onOpenDirectory}
+            disabled={!blueprint}
             title="Open Full District Directory & Cadastre"
-            className={`${panelClass} flex h-9 items-center gap-1.5 rounded-2xl border border-transparent px-2.5 text-xs font-semibold transition cursor-pointer hover:border-amber-500/50`}
+            className={`${panelClass} flex h-9 items-center gap-1.5 rounded-2xl border border-transparent px-2.5 text-xs font-semibold transition cursor-pointer hover:border-amber-500/50 disabled:opacity-45 disabled:cursor-not-allowed`}
           >
             <Building2 className="h-3.5 w-3.5 text-amber-500 shrink-0" />
             <span className="hidden md:inline">Directory</span>
@@ -346,8 +347,9 @@ export const TopBar: React.FC<TopBarProps> = ({
           <button
             type="button"
             onClick={onOpenAIMayor}
+            disabled={!blueprint}
             title="Google Gemini Decision Engine (Autonomous Urban Architect & Historical Lore)"
-            className={`${panelClass} flex h-9 items-center gap-1.5 rounded-2xl border px-2.5 text-xs font-bold transition cursor-pointer ${
+            className={`${panelClass} flex h-9 items-center gap-1.5 rounded-2xl border px-2.5 text-xs font-bold transition cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
               decisionPlan
                 ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300'
                 : isAIGenerating
@@ -478,32 +480,36 @@ export const TopBar: React.FC<TopBarProps> = ({
           <button
             type="button"
             onClick={() => onCameraPreset('overview')}
+            disabled={!blueprint}
             title="Island Overview"
-            className={`rounded-xl border border-transparent p-1.5 transition cursor-pointer ${hoverBg}`}
+            className={`rounded-xl border border-transparent p-1.5 transition cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${hoverBg}`}
           >
             <Compass className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => onCameraPreset('street')}
+            disabled={!blueprint}
             title="Street-Level View"
-            className={`hidden 2xl:inline-flex rounded-xl border border-transparent p-1.5 transition cursor-pointer ${hoverBg}`}
+            className={`hidden 2xl:inline-flex rounded-xl border border-transparent p-1.5 transition cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${hoverBg}`}
           >
             <Eye className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => onCameraPreset('blueprint')}
+            disabled={!blueprint}
             title="Top-Down Urban Plan"
-            className={`hidden 2xl:inline-flex rounded-xl border border-transparent p-1.5 transition cursor-pointer ${hoverBg}`}
+            className={`hidden 2xl:inline-flex rounded-xl border border-transparent p-1.5 transition cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${hoverBg}`}
           >
             <MapIcon className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => onCameraPreset('orbit')}
+            disabled={!blueprint}
             title="Toggle Cinematic Orbit"
-            className={`rounded-xl border p-1.5 transition cursor-pointer ${
+            className={`rounded-xl border p-1.5 transition cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
               autoOrbit ? activeBg : `border-transparent ${hoverBg}`
             }`}
           >
@@ -512,8 +518,9 @@ export const TopBar: React.FC<TopBarProps> = ({
           <button
             type="button"
             onClick={onToggleTransit}
+            disabled={!blueprint}
             title="Toggle Related Repo Corridors"
-            className={`rounded-xl border p-1.5 transition cursor-pointer ${
+            className={`rounded-xl border p-1.5 transition cursor-pointer disabled:opacity-45 disabled:cursor-not-allowed ${
               showTransit ? activeBg : `border-transparent ${hoverBg}`
             }`}
           >

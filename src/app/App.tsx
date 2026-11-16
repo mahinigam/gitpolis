@@ -157,6 +157,10 @@ export function App() {
           { signal: controller.signal }
         );
 
+        // The user may load the showcase while the fetch is finishing its
+        // cosmetic construction phases. Never let that late result replace it.
+        if (controller.signal.aborted) return;
+
         if (!payload.repos || payload.repos.length === 0) {
           setErrorBanner({
             message: `@${payload.user.login} currently has 0 public repositories to build districts from.`,
@@ -168,15 +172,17 @@ export function App() {
         url.searchParams.set('user', cleaned);
         window.history.replaceState({}, '', url.toString());
       } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (controller.signal.aborted || abortRef.current !== controller) return;
         setErrorBanner({
           message:
             err instanceof Error ? err.message : 'Could not build city for this GitHub profile.',
         });
       } finally {
-        if (abortRef.current === controller) abortRef.current = null;
-        setIsLoading(false);
-        setConstructionProgress(null);
+        if (abortRef.current === controller) {
+          abortRef.current = null;
+          setIsLoading(false);
+          setConstructionProgress(null);
+        }
       }
     },
     [applyCityPayload]
@@ -196,8 +202,16 @@ export function App() {
   }, [applyCityPayload, handleSearchGitHub]);
 
   const handleLoadShowcase = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setIsLoading(false);
+    setConstructionProgress(null);
     setErrorBanner(null);
     applyCityPayload(SHOWCASE_PROFILES['atelier-dev']);
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete('user');
+    window.history.replaceState({}, '', url.toString());
   }, [applyCityPayload]);
 
   const handleCameraPreset = useCallback(
@@ -317,7 +331,7 @@ export function App() {
         />
       )}
 
-      {showHint && !selection && (
+      {blueprint && showHint && !selection && (
         <div className="pointer-events-none fixed bottom-20 left-1/2 z-10 hidden -translate-x-1/2 md:block">
           <div
             className={`${isNightUI ? 'glass-panel-dark' : 'glass-panel'} rounded-full px-4 py-1.5 text-[11px] font-bold text-slate-800 shadow-lg dark:text-slate-100`}
