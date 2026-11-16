@@ -6,12 +6,12 @@ import type {
   HoverInfo,
   SelectionState,
   WeatherMode,
-} from '../types/city';
-import type { MunicipalDecisionPlan } from '../types/decision';
-import { createProceduralBuilding, type BuiltBuilding } from './buildingFactory';
-import { buildCityEnvironment, type BuiltEnvironment } from './environmentFactory';
-import { CityLifeSystem } from './lifeSystem';
-import { createHistoricalMonument, createAITransitCorridor } from './aiMunicipalDecorators';
+} from '../domain/city/types';
+import type { MunicipalDecisionPlan } from '../domain/decision/types';
+import { createProceduralBuilding, type BuiltBuilding } from './builders/buildingFactory';
+import { buildCityEnvironment, type BuiltEnvironment } from './builders/environmentFactory';
+import { CityLifeSystem } from './systems/lifeSystem';
+import { createHistoricalMonument, createAITransitCorridor } from './builders/municipalDecorators';
 
 export interface CitySceneCallbacks {
   onHover: (info: HoverInfo | null) => void;
@@ -61,7 +61,6 @@ export class CitySceneEngine {
   private beaconMaterials: THREE.MeshStandardMaterial[] = [];
 
   // Google Decision Engine layers
-  private decisionPlan: MunicipalDecisionPlan | null = null;
   private aiTransitGroup: THREE.Group = new THREE.Group();
   private aiMonumentsGroup: THREE.Group = new THREE.Group();
 
@@ -283,7 +282,6 @@ export class CitySceneEngine {
     this.cityRoot = null;
     this.env = null;
     this.life = null;
-    this.decisionPlan = null;
     this.buildings = [];
     this.buildingMap.clear();
     this.windowMaterials = [];
@@ -291,7 +289,6 @@ export class CitySceneEngine {
   }
 
   applyDecisionPlan(plan: MunicipalDecisionPlan) {
-    this.decisionPlan = plan;
 
     // Harmonize atmosphere with AI Decision recommendation
     this.targetTimeOfDay = plan.citySummary.suggestedTimeOfDay;
@@ -331,18 +328,8 @@ export class CitySceneEngine {
       }
     });
 
-    // 3. Update District Prosperity & Fulfillment based on AI Civic Critique
-    for (const dDecision of plan.districts) {
-      const dist = this.blueprint.districts.find(
-        (x) =>
-          x.id.toLowerCase() === dDecision.repoName.toLowerCase() ||
-          x.id.toLowerCase().includes(dDecision.repoName.toLowerCase())
-      );
-      if (dist) {
-        dist.prosperity.prosperityScore = dDecision.civicCritique.prosperityScore;
-        dist.prosperity.fulfillmentScore = dDecision.civicCritique.fulfillmentScore;
-      }
-    }
+    // Prosperity/fulfilment critiques are merged into the blueprint by the
+    // app layer (`withDecisionCritique`) so this class never mutates state.
   }
 
   setTimeOfDay(hours: number) {

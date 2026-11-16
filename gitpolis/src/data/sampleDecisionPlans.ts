@@ -1,4 +1,4 @@
-import type { MunicipalDecisionPlan } from '../types/decision';
+import type { MunicipalDecisionPlan } from '../domain/decision/types';
 
 export const SAMPLE_DECISION_PLANS: Record<string, MunicipalDecisionPlan> = {
   mahinigam: {

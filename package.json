@@ -1,5 +1,5 @@
 {
-  "name": "gitpolis-app",
+  "name": "gitpolis-workspace",
   "private": true,
   "version": "1.0.0",
   "description": "Procedural 3D City Builder from any GitHub Profile",
@@ -7,6 +7,10 @@
     "dev": "npm --prefix gitpolis run dev",
     "build": "npm --prefix gitpolis run build",
     "preview": "npm --prefix gitpolis run preview",
+    "test": "npm --prefix gitpolis run test",
+    "test:coverage": "npm --prefix gitpolis run test:coverage",
+    "lint": "npm --prefix gitpolis run lint",
+    "typecheck": "npm --prefix gitpolis run typecheck",
     "install:app": "npm --prefix gitpolis install"
   }
 }

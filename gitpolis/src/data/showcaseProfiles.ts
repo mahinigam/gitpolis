@@ -1,4 +1,4 @@
-import type { GitHubProfilePayload, GitHubCommitData, CommitCategory } from '../types/city';
+import type { GitHubProfilePayload, GitHubCommitData, CommitCategory } from '../domain/city/types';
 
 function makeCommits(
   seedPrefix: string,
