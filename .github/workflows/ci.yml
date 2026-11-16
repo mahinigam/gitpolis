@@ -9,6 +9,12 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# Verification only needs to read the repository. The default token may
+# otherwise be write-capable for pushes to main and is persisted in .git/config
+# by checkout, where dependency install scripts could read it.
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -17,6 +23,8 @@ jobs:
         working-directory: gitpolis
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
