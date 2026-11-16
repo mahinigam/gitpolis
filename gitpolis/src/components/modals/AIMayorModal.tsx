@@ -153,7 +153,7 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
                   Synthesizing Municipal Master Plan…
                 </h3>
                 <p className={`mt-1 text-xs font-medium ${subtle}`}>
-                  {statusMessage || 'Engaging Gemini 2.0 Flash Decision API with strict structured schema…'}
+                  {statusMessage || 'Engaging the Gemini Decision API with a strict structured schema…'}
                 </p>
               </div>
             </div>
@@ -341,7 +341,7 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
                       Google AI Studio Free API Key
                     </h3>
                     <p className={`mt-1 text-xs leading-relaxed ${subtle}`}>
-                      GitPolis uses the high-performance Gemini 2.0 Flash model via Google AI Studio. Free tier keys allow
+                      GitPolis uses Gemini 2.5 Flash by default via Google AI Studio. Free tier keys allow
                       15 requests per minute with zero billing required.
                     </p>
 
@@ -369,7 +369,7 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
 
                     {savedKeyToast && (
                       <p className="mt-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                        API key saved securely to local browser storage.
+                        API key saved for this browser session.
                       </p>
                     )}
 
