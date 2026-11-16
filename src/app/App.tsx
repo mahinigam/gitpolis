@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle, Building2, Sparkles, X } from 'lucide-react';
 import type {
   CameraPreset,
   CityBlueprint,
@@ -10,7 +10,6 @@ import type { MunicipalDecisionPlan } from '../domain/decision';
 import { buildCityBlueprint } from '../domain/city/planning';
 import { withDecisionCritique } from '../domain/city/analysis';
 import { SHOWCASE_PROFILES } from '../data/showcaseProfiles';
-import { SAMPLE_DECISION_PLANS } from '../data/sampleDecisionPlans';
 import { fetchGitHubProfileWithProgress } from '../services/github/client';
 import {
   computeProfileFingerprint,
@@ -86,14 +85,10 @@ export function App() {
     highlightLanguage(null);
     engineRef.current?.loadBlueprint(nextBlueprint);
 
-    // Restore a cached/curated AI plan for this profile, if one exists.
+    // Restore a cached AI plan for this profile, if one exists.
     const cacheKey = computeProfileFingerprint(payload);
     const cachedPlan = getCachedDecisionSync(cacheKey);
-    const username = payload.user.login.toLowerCase();
-    const curated = Object.hasOwn(SAMPLE_DECISION_PLANS, username)
-      ? SAMPLE_DECISION_PLANS[username]
-      : null;
-    const plan = cachedPlan ?? curated;
+    const plan = cachedPlan;
 
     setDecisionPlan(plan);
     if (plan) engineRef.current?.applyDecisionPlan(plan);
@@ -187,15 +182,13 @@ export function App() {
     [applyCityPayload]
   );
 
-  // Boot: honour ?user=… otherwise render the instant showcase city.
+  // Boot: honour ?user=… otherwise show the empty state.
   useEffect(() => {
     const initialUser = new URLSearchParams(window.location.search).get('user');
     if (initialUser?.trim()) {
       // Mount-time kickoff: starts an async fetch and owns the construction HUD.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       void handleSearchGitHub(initialUser.trim());
-    } else {
-      applyCityPayload(SHOWCASE_PROFILES['atelier-dev']);
     }
 
     const hintTimer = window.setTimeout(() => setShowHint(false), HINT_TIMEOUT_MS);
@@ -258,6 +251,32 @@ export function App() {
         onOpenDirectory={() => setDirectoryOpen(true)}
         onOpenAIMayor={() => setAiMayorModalOpen(true)}
       />
+
+      {!blueprint && !isLoading && (
+        <main className="pointer-events-none fixed inset-0 z-10 flex items-center justify-center px-4">
+          <section className="pointer-events-auto w-full max-w-md rounded-3xl border border-white/20 bg-slate-950/75 p-7 text-center text-slate-100 shadow-2xl backdrop-blur-xl">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+              <Building2 className="h-7 w-7" />
+            </div>
+            <h1 className="mt-5 font-display text-2xl font-bold">Build your GitHub city</h1>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">
+              Search for a GitHub username above to turn public repositories and commit history into
+              an interactive 3D city.
+            </p>
+            <button
+              type="button"
+              onClick={handleLoadShowcase}
+              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-400 cursor-pointer"
+            >
+              <Sparkles className="h-4 w-4" />
+              Explore showcase city
+            </button>
+            <p className="mt-3 text-[11px] text-slate-400">
+              The showcase uses fictional bundled data and does not call GitHub.
+            </p>
+          </section>
+        </main>
+      )}
 
       {errorBanner && (
         <div className="pointer-events-auto fixed top-20 left-1/2 z-[60] w-[92%] max-w-lg -translate-x-1/2">

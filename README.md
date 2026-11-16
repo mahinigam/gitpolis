@@ -63,7 +63,7 @@ Anything prefixed with `VITE_` is inlined into the public bundle. Do not put sec
 
 ## How it works
 
-1. **Input.** The app boots on a bundled showcase profile, or fetches `GET /api/github/:username`. If the proxy is unavailable, the client calls `api.github.com` directly.
+1. **Input.** The app starts with an empty state. Searching for a username fetches `GET /api/github/:username`; the showcase city can be loaded explicitly. If the proxy is unavailable, the client calls `api.github.com` directly.
 2. **Normalisation.** Raw GitHub objects are mapped once in `src/domain/github/mapRepository.ts`. The server proxy and the browser fallback produce the same domain shape, including per-repo `commitsSource` and profile `source`.
 3. **Blueprint.** `buildCityBlueprint(payload, { nowMs })` is pure and deterministic. It ranks repositories, assigns districts and zones, derives prosperity/fulfilment metrics, picks climate, and lays out the timeline. The seed comes from the login; randomness is precomputed before sorting.
 4. **Render.** `CityScene` builds geometry from the blueprint. Language styles live in `domain/city/styles.ts`; building, environment, and life systems live under `engine/`.
@@ -81,7 +81,7 @@ GitPolis/
 │   ├── app/                        # App shell and hooks
 │   │   └── hooks/                  # engine lifecycle, timeline, climate
 │   ├── components/                 # hud/, panels/, modals/
-│   ├── data/                       # showcase profiles, sample plans
+│   ├── data/                       # showcase profiles
 │   ├── domain/                     # framework-free business logic
 │   │   ├── city/                   # blueprint, planning, analysis, climate, naming, styles
 │   │   ├── decision/               # plan contract, Gemini schema, prompt, validation
