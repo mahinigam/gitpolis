@@ -158,8 +158,8 @@ async function requestViaProxy(
     return null; // no local/preview server — fall through to direct transport
   }
 
-  // 404 means the deployment does not expose the proxy at all.
-  if (response.status === 404) return null;
+  // Falsy response or 404 means the deployment does not expose the proxy at all.
+  if (!response || response.status === 404) return null;
 
   const contentType = response.headers.get('content-type') || '';
 

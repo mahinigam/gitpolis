@@ -35,47 +35,18 @@ class MemoryStorage {
   }
 }
 
-function isStorageFunctional(storage: Storage | undefined): boolean {
-  try {
-    if (!storage) return false;
-    storage.setItem('__storage_test__', '1');
-    storage.removeItem('__storage_test__');
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-if (!isStorageFunctional(globalThis.localStorage)) {
-  const memStorage = new MemoryStorage() as unknown as Storage;
+if (typeof globalThis.localStorage === 'undefined') {
   Object.defineProperty(globalThis, 'localStorage', {
-    value: memStorage,
+    value: new MemoryStorage() as unknown as Storage,
     configurable: true,
-    writable: true,
   });
-  if (typeof window !== 'undefined') {
-    Object.defineProperty(window, 'localStorage', {
-      value: memStorage,
-      configurable: true,
-      writable: true,
-    });
-  }
 }
 
-if (!isStorageFunctional(globalThis.sessionStorage)) {
-  const memStorage = new MemoryStorage() as unknown as Storage;
+if (typeof globalThis.sessionStorage === 'undefined') {
   Object.defineProperty(globalThis, 'sessionStorage', {
-    value: memStorage,
+    value: new MemoryStorage() as unknown as Storage,
     configurable: true,
-    writable: true,
   });
-  if (typeof window !== 'undefined') {
-    Object.defineProperty(window, 'sessionStorage', {
-      value: memStorage,
-      configurable: true,
-      writable: true,
-    });
-  }
 }
 
 afterEach(() => {
