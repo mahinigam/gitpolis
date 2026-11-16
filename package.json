@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:gemini:live": "vite-node scripts/test-gemini-live.ts"
   },
   "dependencies": {
     "lucide-react": "^0.475.0",

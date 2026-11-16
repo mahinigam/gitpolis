@@ -152,6 +152,24 @@ describe('requestMunicipalPlan — upstream failures', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('falls back to gemini-3.5-flash when the primary model returns 404', async () => {
+    fetchMock
+      .mockResolvedValueOnce(
+        jsonResponse(
+          { error: { message: 'models/gemini-2.5-flash is no longer available to new users' } },
+          404
+        )
+      )
+      .mockResolvedValueOnce(success());
+
+    const plan = await requestMunicipalPlan(PAYLOAD, 'key');
+
+    expect(plan).toEqual(PLAN);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[0][0])).toContain('gemini-2.5-flash');
+    expect(String(fetchMock.mock.calls[1][0])).toContain('gemini-3.5-flash');
+  });
+
   it('maps other statuses to 502 and retries once', async () => {
     fetchMock
       .mockResolvedValueOnce(jsonResponse({ error: { message: 'upstream down' } }, 503))

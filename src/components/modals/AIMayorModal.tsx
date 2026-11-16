@@ -9,6 +9,7 @@ import {
   Check,
   RefreshCw,
   ExternalLink,
+  AlertCircle,
 } from 'lucide-react';
 import type { MunicipalDecisionPlan } from '../../domain/decision/types';
 import { getStoredGeminiKey, setStoredGeminiKey } from '../../services/gemini';
@@ -20,6 +21,7 @@ interface AIMayorModalProps {
   plan: MunicipalDecisionPlan | null;
   isLoading: boolean;
   statusMessage?: string;
+  errorMessage?: string | null;
   onClose: () => void;
   onGeneratePlan: (customKey?: string) => void;
 }
@@ -31,6 +33,7 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
   plan,
   isLoading,
   statusMessage,
+  errorMessage,
   onClose,
   onGeneratePlan,
 }) => {
@@ -47,12 +50,13 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
   const subtle = isNightUI ? 'text-slate-200' : 'text-slate-800 font-medium';
 
   const handleSaveKey = () => {
-    setStoredGeminiKey(keyInput.trim());
-    setSavedKeyToast(true);
-    setTimeout(() => setSavedKeyToast(false), 2400);
-    if (keyInput.trim()) {
-      onGeneratePlan(keyInput.trim());
+    const trimmed = keyInput.trim();
+    if (trimmed) {
+      setStoredGeminiKey(trimmed);
+      setSavedKeyToast(true);
+      setTimeout(() => setSavedKeyToast(false), 2400);
     }
+    onGeneratePlan(trimmed || undefined);
   };
 
   return (
@@ -143,6 +147,20 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
 
         {/* Content Body */}
         <div className="thin-scroll flex-1 overflow-y-auto p-5">
+          {errorMessage && !isLoading && (
+            <div className="mb-4 flex items-start gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs text-rose-900 dark:text-rose-200 animate-fade-in">
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-rose-800 dark:text-rose-300">
+                  AI Decision Engine Notice
+                </div>
+                <p className="mt-0.5 font-mono-code text-[11px] leading-relaxed break-words">
+                  {errorMessage}
+                </p>
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
             <div className="flex h-full flex-col items-center justify-center p-8 text-center space-y-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-500 shadow-inner animate-pulse">
@@ -171,14 +189,28 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
                   semantically, construct landmark monuments, and build inter-district transit networks.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setActiveTab('settings')}
-                className="flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-amber-500 cursor-pointer transition"
-              >
-                <KeyRound className="h-4 w-4" />
-                Configure Free Google AI Studio Key
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => onGeneratePlan(keyInput.trim() || undefined)}
+                  className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:from-amber-500 hover:to-orange-500 cursor-pointer transition"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Generate AI Master Plan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('settings')}
+                  className={`flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-xs font-bold transition cursor-pointer ${
+                    isNightUI
+                      ? 'border-white/20 bg-white/10 text-white hover:bg-white/20'
+                      : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100 shadow-sm'
+                  }`}
+                >
+                  <KeyRound className="h-3.5 w-3.5 text-emerald-500" />
+                  Custom Key / Settings
+                </button>
+              </div>
             </div>
           ) : (
             <>
@@ -363,7 +395,7 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
                         className="flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-md hover:bg-amber-500 cursor-pointer transition"
                       >
                         <Check className="h-4 w-4" />
-                        <span>Save & Generate</span>
+                        <span>{keyInput.trim() ? 'Save & Generate' : 'Generate Master Plan'}</span>
                       </button>
                     </div>
 
@@ -385,7 +417,7 @@ export const AIMayorModal: React.FC<AIMayorModalProps> = ({
                       {plan && (
                         <button
                           type="button"
-                          onClick={() => onGeneratePlan(keyInput.trim())}
+                          onClick={() => onGeneratePlan(keyInput.trim() || undefined)}
                           className={`flex items-center gap-1 font-bold ${subtle} ${hoverBg} p-1 rounded-lg cursor-pointer`}
                         >
                           <RefreshCw className="h-3.5 w-3.5" /> Re-Plan City

@@ -19,6 +19,7 @@ import { getCachedDecision, setCachedDecision } from './cache';
 import { getStoredGeminiKey } from './keyStore';
 
 const DEFAULT_MODEL = 'gemini-2.5-flash';
+export const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash'] as const;
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 export type DecisionProgressCallback = (statusText: string) => void;
@@ -88,16 +89,49 @@ async function requestDirect(
   }
 }
 
-/** One retry for transient (5xx / network) failures; 4xx is terminal. */
+/** One retry for transient (5xx / network) failures; 404 falls back to modern models; other 4xx is terminal. */
 async function requestDirectWithRetry(
   payload: GitHubProfilePayload,
   apiKey: string,
   model: string
 ): Promise<unknown> {
-  const firstError = await requestDirect(payload, apiKey, model).catch((err: unknown) => err);
-  if (!(firstError instanceof Error)) return firstError;
-  if (/\b4\d{2}\b/.test(firstError.message)) throw firstError;
-  return requestDirect(payload, apiKey, model);
+  const modelsToTry = [model, ...FALLBACK_MODELS.filter((m) => m !== model)];
+  let lastError: Error | null = null;
+
+  for (const currentModel of modelsToTry) {
+    try {
+      const firstError = await requestDirect(payload, apiKey, currentModel).catch((err: unknown) => err);
+      if (!(firstError instanceof Error)) return firstError;
+
+      // Model retired or not found — fall back to the next candidate model
+      if (
+        /\b404\b/.test(firstError.message) ||
+        /not found|no longer available/i.test(firstError.message)
+      ) {
+        lastError = firstError;
+        continue;
+      }
+
+      // Other 4xx client errors (e.g. 400 invalid key, 429 quota) are terminal
+      if (/\b4\d{2}\b/.test(firstError.message)) throw firstError;
+
+      // Retry once on transient 5xx / network error
+      return await requestDirect(payload, apiKey, currentModel);
+    } catch (err) {
+      if (err instanceof Error) {
+        if (
+          /\b404\b/.test(err.message) ||
+          /not found|no longer available/i.test(err.message)
+        ) {
+          lastError = err;
+          continue;
+        }
+        throw err;
+      }
+    }
+  }
+
+  throw lastError ?? new Error('Gemini Decision API failed across all available models.');
 }
 
 /** Calls the same-origin proxy, which owns the server-side key. */

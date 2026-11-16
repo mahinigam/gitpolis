@@ -6,6 +6,7 @@ import { buildDecisionPrompt } from '../../src/domain/decision/prompt';
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const DEFAULT_MODEL = 'gemini-2.5-flash';
+export const FALLBACK_MODELS = ['gemini-3.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash'] as const;
 
 export class GeminiServiceError extends Error {
   constructor(
@@ -56,21 +57,51 @@ const REQUEST_TIMEOUT_MS = 45_000;
 /**
  * Calls Gemini with structured output enabled and validates the result against
  * the shared decision-plan contract before returning it.
+ *
+ * Automatically falls back to newer compatible models (e.g. gemini-3.5-flash)
+ * if the primary model is retired or unavailable for the current API key.
  */
 export async function requestMunicipalPlan(
   payload: GitHubProfilePayload,
   apiKey: string
 ): Promise<MunicipalDecisionPlan> {
+  const primaryModel = resolveModel();
+  const modelsToTry = [primaryModel, ...FALLBACK_MODELS.filter((m) => m !== primaryModel)];
+
   let lastError: GeminiServiceError | null = null;
 
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      return await requestOnce(payload, apiKey);
-    } catch (err) {
-      lastError = err instanceof GeminiServiceError ? err : new GeminiServiceError('Gemini request failed');
-      // Retry only transient upstream failures.
-      if (lastError.status !== 502) throw lastError;
-      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 400));
+  for (const model of modelsToTry) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        return await requestOnce(payload, apiKey, model);
+      } catch (err) {
+        lastError =
+          err instanceof GeminiServiceError ? err : new GeminiServiceError('Gemini request failed');
+
+        // If the model does not exist or was retired, break attempt loop to try the next model.
+        if (
+          lastError.status === 404 ||
+          /not found|no longer available/i.test(lastError.message)
+        ) {
+          break;
+        }
+
+        // Terminal errors: bad API key (400), quota (429), or invalid JSON/schema cannot be retried.
+        if (
+          lastError.status === 400 ||
+          lastError.status === 429 ||
+          /empty candidate|malformed JSON|decision schema/i.test(lastError.message)
+        ) {
+          throw lastError;
+        }
+
+        // Transient upstream failure: retry once on the current model, then throw.
+        if (attempt === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 400));
+        } else {
+          throw lastError;
+        }
+      }
     }
   }
 
@@ -79,10 +110,11 @@ export async function requestMunicipalPlan(
 
 async function requestOnce(
   payload: GitHubProfilePayload,
-  apiKey: string
+  apiKey: string,
+  model: string
 ): Promise<MunicipalDecisionPlan> {
   const response = await fetch(
-    `${GEMINI_API_BASE}/${encodeURIComponent(resolveModel())}:generateContent`,
+    `${GEMINI_API_BASE}/${encodeURIComponent(model)}:generateContent`,
     {
       method: 'POST',
       headers: {
@@ -112,7 +144,8 @@ async function requestOnce(
     } catch {
       // non-JSON body
     }
-    const status = response.status === 429 ? 429 : response.status === 400 ? 400 : 502;
+    const status =
+      response.status === 429 ? 429 : response.status === 400 ? 400 : response.status === 404 ? 404 : 502;
     throw new GeminiServiceError(message, status);
   }
 

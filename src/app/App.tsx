@@ -62,6 +62,7 @@ export function App() {
   const [isAIGenerating, setIsAIGenerating] = useState(false);
   const [aiMayorModalOpen, setAiMayorModalOpen] = useState(false);
   const [aiStatusMessage, setAiStatusMessage] = useState('');
+  const [aiError, setAiError] = useState<string | null>(null);
 
   // Derived controllers
   const timeline = useTimelinePlayback(blueprint, engineRef);
@@ -101,6 +102,7 @@ export function App() {
   const handleTriggerAIDecisions = useCallback(async (customKey?: string) => {
     if (!rawPayloadRef.current) return;
     setIsAIGenerating(true);
+    setAiError(null);
     setErrorBanner(null);
 
     try {
@@ -121,9 +123,9 @@ export function App() {
           : previous
       );
     } catch (err) {
-      setErrorBanner({
-        message: err instanceof Error ? err.message : 'Gemini Decision API failed',
-      });
+      const message = err instanceof Error ? err.message : 'Gemini Decision API failed';
+      setAiError(message);
+      setErrorBanner({ message });
     } finally {
       setIsAIGenerating(false);
       setAiStatusMessage('');
@@ -366,6 +368,7 @@ export function App() {
         plan={decisionPlan}
         isLoading={isAIGenerating}
         statusMessage={aiStatusMessage}
+        errorMessage={aiError}
         onClose={() => setAiMayorModalOpen(false)}
         onGeneratePlan={handleTriggerAIDecisions}
       />

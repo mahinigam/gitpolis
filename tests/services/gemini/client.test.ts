@@ -174,6 +174,25 @@ describe('executeGeminiMunicipalDecisions — direct transport', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('falls back to gemini-3.5-flash when direct model returns 404', async () => {
+    fetchMock
+      .mockResolvedValueOnce(PROXY_404)
+      .mockResolvedValueOnce(
+        jsonResponse(
+          { error: { message: 'models/gemini-2.5-flash is no longer available to new users' } },
+          404
+        )
+      )
+      .mockResolvedValueOnce(directCandidate());
+
+    const result = await executeGeminiMunicipalDecisions(PAYLOAD, 'key');
+
+    expect(result).toEqual(PLAN);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(String(fetchMock.mock.calls[1][0])).toContain('gemini-2.5-flash');
+    expect(String(fetchMock.mock.calls[2][0])).toContain('gemini-3.5-flash');
+  });
+
   it('does not retry a terminal 4xx response', async () => {
     fetchMock
       .mockResolvedValueOnce(PROXY_404)
